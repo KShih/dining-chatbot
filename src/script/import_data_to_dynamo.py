@@ -45,7 +45,6 @@ for name in fnames:
         for i, restaurant in enumerate(restaurants):
             if not restaurant['is_closed']:
                 item = buildItem(restaurant, cuisine)
-                print(item)
                 try:
                     dynamodb.put_item(TableName='yelp-restaurants', Item=item)
                     passCount += 1

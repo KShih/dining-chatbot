@@ -8,10 +8,11 @@ API_KEY = os.environ['API_KEY']
 ENDPOINT = 'https://api.yelp.com/v3/businesses/search'
 HEADERS = {'Authorization': 'bearer %s' % API_KEY}
 
-data = {}
-ids = []
+
 types = ['french', 'indian', 'japanese', 'chinese', 'korean']
 for type in types:
+    data = {}
+    ids = []
     for i in range(0, 1000, 50):
         PARAMETERS = {'term': type + ' restaurant',
                       'limit': 50,
@@ -25,7 +26,7 @@ for type in types:
 
     data['businesses'] = ids
 
-    # data = data['businesses'][0]
+    #data = data['businesses'][0]
 
     f = open(type + "_data.json", mode='w')
     json.dump(data, f)
