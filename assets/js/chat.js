@@ -1,3 +1,5 @@
+var apigClient = apigClientFactory.newClient();
+
 var $messages = $('.messages-content'),
     d, h, m,
     i = 0;
@@ -5,7 +7,7 @@ var $messages = $('.messages-content'),
 $(window).load(function() {
     $messages.mCustomScrollbar();
     setTimeout(function() {
-        fakeMessage();
+        // bot greeting msg
     }, 100);
 });
 
@@ -30,28 +32,21 @@ function insertMessage() {
         return false;
     }
     // send the user input msg here
-    // TODO:
-    sendApi(msg);
-
-    $('<div class="message message-personal">' + msg + '</div>').appendTo($('.mCSB_container')).addClass('new');
-    setDate();
-    $('.message-input').val(null);
-    updateScrollbar();
-    setTimeout(function() {
-        fakeMessage();
-    }, 1000 + (Math.random() * 20) * 100);
+    sendApi(msg).then( function(result){
+        $('<div class="message message-personal">' + msg + '</div>').appendTo($('.mCSB_container')).addClass('new');
+        setDate();
+        $('.message-input').val(null);
+        updateScrollbar();
+        botReplyMessage(result);
+    });
 }
 
-var botReply = ""
 
-function sendApi(msg) { // should i put let here?
+function sendApi(msg) {
     var params = {
         // This is where any modeled request parameters should be added.
         // The key is the parameter name, as it is defined in the API in API Gateway.
-        // param0: '',
-        // param1: ''
     };
-
     var body = {
         // This is where you define the body of the request,
 
@@ -59,12 +54,11 @@ function sendApi(msg) { // should i put let here?
             "type": "string",
             "unstructured": {
                 "id": 0,
-                "text": "Hi, this is testing message",
+                "text": "Hi, this is the sample msg from user",
                 "timestamp": "string"
             }
         }]
     };
-
     var additionalParams = {
         // If there are any unmodeled query parameters or headers that must be
         //   sent with the request, add them here.
@@ -78,22 +72,18 @@ function sendApi(msg) { // should i put let here?
         // }
     };
 
-    apigClient.methodName(params, body, additionalParams)
+    return apigClient.chatbotPost(params, body, additionalParams)
         .then(function(result) {
             // Add success callback code here.
-            botReply = result;
+
+            console.log("result", result);
+            return result;
+            console.log("bot api return success");
         }).catch(function(result) {
+            console.log(result);
+            return result;
+            console.log("bot api return fail");
             // Add error callback code here.
-            botReply = {
-                "messages": [{
-                    "type": "string",
-                    "unstructured": {
-                        "id": 0,
-                        "text": "Error occur, please try again",
-                        "timestamp": "string"
-                    }
-                }]
-            };
         });
 }
 
@@ -108,7 +98,8 @@ $(window).on('keydown', function(e) {
     }
 })
 
-function fakeMessage() {
+function botReplyMessage(result) {
+    console.log("botReplyMessage", result);
     if ($('.message-input').val() != '') {
         return false;
     }
@@ -120,7 +111,7 @@ function fakeMessage() {
         // Put bot answering msg here
         // TODO:
 
-        $('<div class="message new"><figure class="avatar"><img src="assets/media/food_robot.png" /></figure>' + botReply.messages.text + '</div>').appendTo($('.mCSB_container')).addClass('new');
+        $('<div class="message new"><figure class="avatar"><img src="assets/media/food_robot.png" /></figure>' + result.data.body.messages[0].unstructured.text + '</div>').appendTo($('.mCSB_container')).addClass('new');
         setDate();
         updateScrollbar();
         i++;
