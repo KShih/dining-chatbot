@@ -30,11 +30,13 @@ def push_elastic(responses):
     """
     es = Elasticsearch(ENDPOINT, http_auth=AWSAUTH, use_ssl=True, verify_certs=True, connection_class=RequestsHttpConnection)
 
-    for response in responses:
-        es.index(index="restaurants", doc_type="restaurant", id=response['id'], body=response)
+    for document in responses:
+        es.index(index="restaurants", doc_type="restaurant", body=document)  # no idea how can we view the doc_type
 
 
-# es = Elasticsearch(ENDPOINT, http_auth=AWSAUTH, use_ssl=True, verify_certs=True, connection_class=RequestsHttpConnection)
-# es.indices.create(index="restaurant", ignore=400)
+# Creating the subtable of your elastic search, do following two line first to initialize
+es = Elasticsearch(ENDPOINT, http_auth=AWSAUTH, use_ssl=True, verify_certs=True, connection_class=RequestsHttpConnection)
+#es.indices.create(index="restaurant", ignore=400)
+#es.indices.delete(index="restaurants", ignore=[400, 404])
 response = scan_dynamodb()
 push_elastic(response)
