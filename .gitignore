@@ -1,1 +1,4 @@
 .DS_Store
+.idea
+yelp_data
+venv
