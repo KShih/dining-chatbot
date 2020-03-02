@@ -9,8 +9,30 @@ import random
 import urllib3
 import boto3
 
-""" ---  Get the id from es --- """
 
+""" ---  Get the cuisine from SQS --- """
+QUEUE_NAME = "reservationQ"
+
+
+def get_cuisine_from_sqs():
+    sqs_client = boto3.client('sqs')
+    sqs_queue_url = sqs_client.get_queue_url(QueueName=QUEUE_NAME)['QueueUrl']
+    response = sqs_client.receive_message(
+        QueueUrl=sqs_queue_url,
+        MaxNumberOfMessages=1,
+        VisibilityTimeout=10,
+        WaitTimeSeconds=10,
+    )
+    if response:
+        body = response['Messages'][0]['Body']
+        data = json.loads(body)
+        return data['rType']
+    else:
+        print("Cannot get the data from sqs")
+        return None
+
+
+""" ---  Get the id from es --- """
 ENDPOINT = "https://search-restaurants-kcmb5vcpfi2wp6m25xvuy2ht5m.us-east-1.es.amazonaws.com/"
 INDEX = "restaurants/"
 ES_SEARCH_RESULT_SIZE = 10  # the size of the data we expect to be returned from es, set it little to ease the server loading
@@ -25,7 +47,7 @@ def get_esquery_count(cuisine):
         data = json.loads(result.decode('utf-8'))
         return data['count']
     except:
-        None
+        return None
 
 
 def get_esquery_data(cuisine, start):
@@ -74,8 +96,10 @@ def get_dbdetail_by_id(ids):
 
 if __name__ == '__main__':
 
+    """ 0. get cuisine from sqs"""
+    cuisine = get_cuisine_from_sqs()
+
     """ 1. get es data """
-    cuisine = "chinese"
     count = get_esquery_count(cuisine)
     start = random.randrange(count - ES_SEARCH_RESULT_SIZE - 1)
     data = get_esquery_data(cuisine, start)
@@ -84,4 +108,3 @@ if __name__ == '__main__':
 
     """ 2. get dynamo data """
     restaurants = get_dbdetail_by_id(ids)
-    print(restaurants)
