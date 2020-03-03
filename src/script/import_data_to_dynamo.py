@@ -18,8 +18,8 @@ def buildItem(data, cuisine):
         item['location'] = {'SS': [str(data['coordinates']['latitude']), str(data['coordinates']['longitude'])]}
     if 'price' in data:
         item['price'] = {'S': data['price']}
-    if 'address' in data:
-        item['address'] = {'S': data['display_address']}
+    if 'location' in data and data['location']['display_address']:
+        item['address'] = {'S': ", ".join(row for row in data['location']['display_address'])}
     if 'phone' in data:
         item['phone'] = {'S': data['phone']}
     item['cuisine'] = {'S': cuisine}
@@ -51,7 +51,7 @@ for name in fnames:
                 except:
                     print("Failed")
                     failCount += 1
-            print("Processed: {} of {}".format(i, cuisine))
+            # print("Processed: {} of {}".format(i, cuisine))
 
 print("Pass Count: ", passCount)
 print("Fail Count: ", failCount)
