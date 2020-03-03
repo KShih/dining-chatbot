@@ -25,8 +25,8 @@ def get_cuisine_from_sqs():
     )
     if response:
         body = response['Messages'][0]['Body']
-        data = json.loads(body)
-        return data['rType']
+        data_sqs = json.loads(body)
+        return data_sqs
     else:
         print("Cannot get the data from sqs")
         return None
@@ -94,10 +94,40 @@ def get_dbdetail_by_id(ids):
     return restaurants
 
 
+""" ---  Build and send message ---"""
+
+
+def build_msg(restaurants, time, people):
+    base = "Top suggestions for {} people, for today at {}. ".format(people, time)
+    res_msg = ""
+    flag, i = True, 0
+    while flag and i < 3:
+        temp = "{name} located at {address}. \n {phone}\n".format(name=restaurants[i][0], address=restaurants[i][1], phone=restaurants[i][-1])
+        if len(temp) + len(base) < 160:
+            base += temp
+            i += 1
+        else:
+            flag = False
+    return base
+
+
+def send_sns(msg, phone_num):
+    sns_client = boto3.client('sns')
+    if len(phone_num) < 10:
+        print("Phone Number error, cannot send SNS")
+    elif len(phone_num) == 10:
+        phone_num = "1" + phone_num
+
+    response = sns_client.publish(
+        PhoneNumber=phone_num,
+        Message=msg
+    )
+
 if __name__ == '__main__':
 
     """ 0. get cuisine from sqs"""
-    cuisine = get_cuisine_from_sqs()
+    data_sqs = get_cuisine_from_sqs()
+    cuisine = data_sqs['rType']
 
     """ 1. get es data """
     count = get_esquery_count(cuisine)
@@ -108,3 +138,7 @@ if __name__ == '__main__':
 
     """ 2. get dynamo data """
     restaurants = get_dbdetail_by_id(ids)
+
+    """ 3. send sns """
+    msg = build_msg(restaurants, data_sqs['rTime'], data_sqs['rPeople'])
+    send_sns(msg, data_sqs['PhoneNumber'])
