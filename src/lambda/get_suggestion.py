@@ -123,6 +123,7 @@ def send_sns(msg, phone_num):
         Message=msg
     )
 
+# def lambda_handler(event, context):  # Change it to this on aws
 if __name__ == '__main__':
 
     """ 0. get cuisine from sqs"""
