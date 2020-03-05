@@ -1,3 +1,5 @@
+// Version1: User(Through API Gateway SDK) -> (API Gateway-> Lambda) -> Lex
+
 var apigClient = apigClientFactory.newClient();
 
 var $messages = $('.messages-content'),
@@ -54,7 +56,7 @@ function sendApi(msg) {
             "type": "string",
             "unstructured": {
                 "id": 0,
-                "text": "Hi, this is the sample msg from user",
+                "text": msg,
                 "timestamp": "string"
             }
         }]
@@ -75,7 +77,6 @@ function sendApi(msg) {
     return apigClient.chatbotPost(params, body, additionalParams)
         .then(function(result) {
             // Add success callback code here.
-
             console.log("result", result);
             return result;
             console.log("bot api return success");
@@ -111,7 +112,7 @@ function botReplyMessage(result) {
         // Put bot answering msg here
         // TODO:
 
-        $('<div class="message new"><figure class="avatar"><img src="assets/media/food_robot.png" /></figure>' + result.data.body.messages[0].unstructured.text + '</div>').appendTo($('.mCSB_container')).addClass('new');
+        $('<div class="message new"><figure class="avatar"><img src="assets/media/food_robot.png" /></figure>' + result.data.message + '</div>').appendTo($('.mCSB_container')).addClass('new');
         setDate();
         updateScrollbar();
         i++;
