@@ -46,8 +46,6 @@ function insertMessage() {
 
 function sendApi(msg) {
     var params = {
-        // This is where any modeled request parameters should be added.
-        // The key is the parameter name, as it is defined in the API in API Gateway.
     };
     var body = {
         // This is where you define the body of the request,
@@ -62,28 +60,14 @@ function sendApi(msg) {
         }]
     };
     var additionalParams = {
-        // If there are any unmodeled query parameters or headers that must be
-        //   sent with the request, add them here.
-        // headers: {
-        //   param0: '',
-        //   param1: ''
-        // },
-        // queryParams: {
-        //   param0: '',
-        //   param1: ''
-        // }
     };
 
     return apigClient.chatbotPost(params, body, additionalParams)
         .then(function(result) {
             // Add success callback code here.
-            console.log("result", result);
             return result;
-            console.log("bot api return success");
         }).catch(function(result) {
-            console.log(result);
             return result;
-            console.log("bot api return fail");
             // Add error callback code here.
         });
 }
@@ -100,7 +84,6 @@ $(window).on('keydown', function(e) {
 })
 
 function botReplyMessage(result) {
-    console.log("botReplyMessage", result);
     if ($('.message-input').val() != '') {
         return false;
     }
