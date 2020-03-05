@@ -1,6 +1,17 @@
-// Version1: User(Through API Gateway SDK) -> (API Gateway-> Lambda) -> Lex
+// Version2: User(After Cognito) -> Lex
+// https://aws.amazon.com/tw/blogs/machine-learning/greetings-visitor-engage-your-web-users-with-amazon-lex/
 
-var apigClient = apigClientFactory.newClient();
+// Initialize the Amazon Cognito credentials provider
+AWS.config.region = 'us-east-1'; // Region
+AWS.config.credentials = new AWS.CognitoIdentityCredentials({
+    IdentityPoolId: 'us-east-1:05f41a9e-609b-43dd-bd77-a0fbeedcda16',
+});
+
+
+var lexruntime = new AWS.LexRuntime();
+var lexUserId = 'BookResturant' + Date.now();
+var sessionAttributes = {};
+
 
 var $messages = $('.messages-content'),
     d, h, m,
@@ -29,48 +40,45 @@ function setDate() {
 }
 
 function insertMessage() {
+    console.log("hiiii");
     let msg = $('.message-input').val();
     if ($.trim(msg) == '') {
         return false;
     }
-    // send the user input msg here
-    sendApi(msg).then( function(result){
-        $('<div class="message message-personal">' + msg + '</div>').appendTo($('.mCSB_container')).addClass('new');
-        setDate();
-        $('.message-input').val(null);
-        updateScrollbar();
-        botReplyMessage(result);
-    });
+
+    sendApi(msg);
+    $('<div class="message message-personal">' + msg + '</div>').appendTo($('.mCSB_container')).addClass('new');
+    setDate();
+    $('.message-input').val(null);
+    updateScrollbar();
+
 }
 
 
 function sendApi(msg) {
     var params = {
-    };
-    var body = {
-        // This is where you define the body of the request,
-
-        "messages": [{
-            "type": "string",
-            "unstructured": {
-                "id": 0,
-                "text": msg,
-                "timestamp": "string"
-            }
-        }]
-    };
-    var additionalParams = {
+        botAlias: '$LATEST',
+		botName: 'BookResturant',
+		inputText: msg,
+		userId: lexUserId,
+		sessionAttributes: sessionAttributes
     };
 
-    return apigClient.chatbotPost(params, body, additionalParams)
-        .then(function(result) {
-            // Add success callback code here.
-            return result;
-        }).catch(function(result) {
-            return result;
-            // Add error callback code here.
-        });
+    lexruntime.postText(params, function(err, data) {
+		if (err) {
+			console.log(err, err.stack);
+			data = 'Error:  ' + err.message + ' (see console for details)'
+		}
+		if (data) {
+			// capture the sessionAttributes for the next cycle
+			sessionAttributes = data.sessionAttributes;
+			// show response and/or error/dialog status
+            botReplyMessage(data);
+		}
+	});
+
 }
+
 
 $('.message-submit').click(function() {
     insertMessage();
@@ -84,6 +92,7 @@ $(window).on('keydown', function(e) {
 })
 
 function botReplyMessage(result) {
+    console.log("botReplyMessage", result);
     if ($('.message-input').val() != '') {
         return false;
     }
@@ -95,7 +104,7 @@ function botReplyMessage(result) {
         // Put bot answering msg here
         // TODO:
 
-        $('<div class="message new"><figure class="avatar"><img src="assets/media/food_robot.png" /></figure>' + result.data.message + '</div>').appendTo($('.mCSB_container')).addClass('new');
+        $('<div class="message new"><figure class="avatar"><img src="assets/media/food_robot.png" /></figure>' + result.message + '</div>').appendTo($('.mCSB_container')).addClass('new');
         setDate();
         updateScrollbar();
         i++;
