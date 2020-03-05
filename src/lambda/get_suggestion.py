@@ -3,34 +3,15 @@ Read the cuisine from SQS that the user spicify in Lex,
 Prepushing all the data into dynamo, creating mapping index on ES
 Use as lambda to search id in elastic search, and use it to get data from dynamo
 """
-from __future__ import print_function # Python 2/3 compatibility
+from __future__ import print_function  # Python 2/3 compatibility
 import json
 import random
 import urllib3
 import boto3
+import logging
 
-
-""" ---  Get the cuisine from SQS --- """
-QUEUE_NAME = "reservationQ"
-
-
-def get_cuisine_from_sqs():
-    sqs_client = boto3.client('sqs')
-    sqs_queue_url = sqs_client.get_queue_url(QueueName=QUEUE_NAME)['QueueUrl']
-    response = sqs_client.receive_message(
-        QueueUrl=sqs_queue_url,
-        MaxNumberOfMessages=1,
-        VisibilityTimeout=10,
-        WaitTimeSeconds=10,
-    )
-    if response:
-        body = response['Messages'][0]['Body']
-        data_sqs = json.loads(body)
-        return data_sqs
-    else:
-        print("Cannot get the data from sqs")
-        return None
-
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
 
 """ ---  Get the id from es --- """
 ENDPOINT = "https://search-restaurants-kcmb5vcpfi2wp6m25xvuy2ht5m.us-east-1.es.amazonaws.com/"
@@ -123,11 +104,11 @@ def send_sns(msg, phone_num):
         Message=msg
     )
 
-# def lambda_handler(event, context):  # Change it to this on aws
-if __name__ == '__main__':
-
+def lambda_handler(event, context):
+    print(">>>>>>>> Get suggestions being triggered <<<<<<<<<")
     """ 0. get cuisine from sqs"""
-    data_sqs = get_cuisine_from_sqs()
+    plain_data_sqs = event['Records'][0]['body']  # trigger by sqs
+    data_sqs = json.loads(plain_data_sqs)
     cuisine = data_sqs['rType']
 
     """ 1. get es data """
@@ -143,3 +124,4 @@ if __name__ == '__main__':
     """ 3. send sns """
     msg = build_msg(restaurants, data_sqs['rTime'], data_sqs['rPeople'])
     send_sns(msg, data_sqs['PhoneNumber'])
+    print(">>>>>>>> Get suggestions finished <<<<<<<<<")

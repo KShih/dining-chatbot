@@ -36,7 +36,7 @@ def push_elastic(responses):
 
 # Creating the subtable of your elastic search, do following two line first to initialize
 es = Elasticsearch(ENDPOINT, http_auth=AWSAUTH, use_ssl=True, verify_certs=True, connection_class=RequestsHttpConnection)
-#es.indices.create(index="restaurant", ignore=400)
-#es.indices.delete(index="restaurants", ignore=[400, 404])
+# es.indices.create(index="restaurants", ignore=400)
+# es.indices.delete(index="restaurants", ignore=[400, 404])
 response = scan_dynamodb()
 push_elastic(response)
