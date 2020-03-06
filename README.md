@@ -1,7 +1,7 @@
 # dining-chatbot
 ## Introduction
 * A serverless, movroservice-driven web application hosted on AWS S3
-* [Chatbot link]("https://dining-chatbot-kshih.s3.amazonaws.com/index.html")
+* [Chatbot link](https://dining-chatbot-kshih.s3.amazonaws.com/index.html)
 * Available Location:
     * New York
 * Available Cuisine Type:
