@@ -2,6 +2,7 @@
 ## Introduction
 * A serverless, movroservice-driven web application hosted on AWS S3
 * [Chatbot link](https://dining-chatbot-kshih.s3.amazonaws.com/index.html)
+   * Currently unavailble because of closing the ES for saving the bill :-P
 * Available Location:
     * New York
 * Available Cuisine Type:
